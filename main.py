@@ -40,7 +40,7 @@ class LSTMUnit:
     self.bf = np.zeros(num_hidden_units,1)
     self.bo = np.zeros(num_hidden_units,1)
 
-  def forward(inputs,outputs,sprev)
+  def forward(inputs,outputs,hprev,cprev)
 
     seq_len = len(inputs)
     
@@ -49,14 +49,15 @@ class LSTMUnit:
     C = {}
     y= {}
     probs = {}
-    C[-1] = sprev
+    C[-1] = cprev
+    h[-1] = hprev
     loss = 0
 
 
     for i in range(seq_len):
       x = np.zeros(self.vocab_size,1)
       x[i][inputs[i]] = 1
-      xc = np.hstack(hprev,x[i])
+      xc = np.hstack(h[i-1],x[i])
       g = np.tanh(np.dot(self.Wg,xc) + self.bg)
       ig = sigmoid(np.dot(self.Wi,xc) + self.bi) 
       fg = sigmoid(np.dot(self.Wf,xc) + self.bf)
@@ -67,7 +68,8 @@ class LSTMUnit:
       probs = np.exp(y[i])/np.sum(np.exp(y[i]))      
       loss += -np.log(probs[i][outputs[i])
 
-    sprev = C[seq_len-1]
+    hprev = h[seq_len-1]
+    cprev = C[seq_len-1] 
 
     return C,x,sprev,probs,loss 
 
