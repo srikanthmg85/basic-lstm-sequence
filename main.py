@@ -124,25 +124,31 @@ class LSTMUnit:
       dby += dy
 
       dh = np.dot(self.Wy.T,dy) + dHnext       
-      dog = dh*C[i] 
+      dC = dh*og[i] + dCnext
 
-      dC = dh*og[i] + dCnext 
+      dog = dh*C[i] 
       dig = dC*g[i] 
       dfg = dC*C[i-1]
-
-      dWi += (ig[i])*(1-ig[i])*np.dot(dig,xc[i].T)
-      dWf += (fg[i])*(1-fg[i])*np.dot(dfg,xc[i].T)
-      dWo += (og[i])*(1-og[i])*np.dot(dog,xc[i].T)
-  
-      dbo += dog*(og[i]*(1-og[i])) 
-      dbi += dig*(ig[i]*(1-ig[i]))
-      dbf += dfg*(fg[i]*(1-fg[i]))
-
       dg = dC*ig[i]
 
-      dWg += np.dot(dg,xc[i].T)
-      dXc = np.dot(self.Wg.T,(dg*(1-g[i]**2)))
-      dbg += dg
+      dog_in = dh*C[i]*(og[i]*(1-og[i]))
+      dig_in = dC*g[i]*(ig[i]*(1-ig[i]))
+      dfg_in = dC*C[i-1]*(fg[i]*(1-fg[i]))
+      dg_in = dg*(1-g[i]**2)
+
+      dWi += np.dot(dig_in,xc[i].T)
+      dWf += np.dot(dfg_in,xc[i].T)
+      dWo += np.dot(dog_in,xc[i].T)
+      dWg += np.dot(dg_in,xc[i].T)  
+
+      dbo += dog_in 
+      dbi += dig_in
+      dbf += dfg_in
+      dbg += dg_in
+      
+      dXc = np.dot(self.Wg.T,dg_in)
+      dXc += np.dot(self.Wf.T,dfg_in)
+      dXc += np.dot(self.Wi.T,dig_in)       
 
       dCnext = dC*fg[i]
       dHnext = dXc[:num_hidden_units]
@@ -284,7 +290,8 @@ for j in range(lstm.num_epochs):
       print txt
     count += 1
 
-
+    if count == 1000:
+      lstm.gradCheck(inputs,outputs,hprev,cprev)
 
 
 
