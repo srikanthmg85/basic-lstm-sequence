@@ -131,10 +131,10 @@ class LSTMUnit:
       dfg = dC*C[i-1]
       dg = dC*ig[i]
 
-      dog_in = dh*C[i]*(og[i]*(1-og[i]))
-      dig_in = dC*g[i]*(ig[i]*(1-ig[i]))
-      dfg_in = dC*C[i-1]*(fg[i]*(1-fg[i]))
-      dg_in = dg*(1-g[i]**2)
+      dog_in = dog*(og[i]*(1.-og[i]))
+      dig_in = dig*(ig[i]*(1.-ig[i]))
+      dfg_in = dfg*(fg[i]*(1.-fg[i]))
+      dg_in = dg*(1.-g[i]**2)
 
       dWi += np.dot(dig_in,xc[i].T)
       dWf += np.dot(dfg_in,xc[i].T)
@@ -149,9 +149,11 @@ class LSTMUnit:
       dXc = np.dot(self.Wg.T,dg_in)
       dXc += np.dot(self.Wf.T,dfg_in)
       dXc += np.dot(self.Wi.T,dig_in)       
+      dXc += np.dot(self.Wo.T,dog_in)
 
       dCnext = dC*fg[i]
       dHnext = dXc[:num_hidden_units]
+      #pdb.set_trace()
 
     return dWg,dWi,dWf,dWo,dWy,dbg,dbi,dbf,dbo,dby    
 
