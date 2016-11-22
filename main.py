@@ -168,10 +168,10 @@ class LSTMUnit:
       x = np.zeros((self.vocab_size,1))
       x[idx] = 1
       xc = np.resize(np.hstack((hprev.flatten(),x.flatten())),(self.vocab_size+self.num_hidden_units,1))
-      g = np.tanh(np.dot(self.Wg,xc))
-      ig = sigmoid(np.dot(self.Wi,xc))
-      fg = sigmoid(np.dot(self.Wf,xc))
-      og = sigmoid(np.dot(self.Wo,xc))
+      g = np.tanh(np.dot(self.Wg,xc) + self.bg)
+      ig = sigmoid(np.dot(self.Wi,xc) + self.bi)
+      fg = sigmoid(np.dot(self.Wf,xc) + self.bf)
+      og = sigmoid(np.dot(self.Wo,xc) + self.bo)
       c1 = g*ig + cprev*fg
       h1 = c1*og
        
@@ -223,7 +223,7 @@ class LSTMUnit:
 txtFile = sys.argv[1]
 num_hidden_units = 100
 seq_len = 25
-lstm = LSTMUnit(txtFile,num_hidden_units,seq_len,0.1,100)
+lstm = LSTMUnit(txtFile,num_hidden_units,seq_len,0.1,10000)
 
 hprev = np.zeros((lstm.num_hidden_units,1))
 cprev = np.zeros_like(hprev)
@@ -287,9 +287,10 @@ for j in range(lstm.num_epochs):
 
 
     if count%100 == 0:
-      seq = lstm.sample(inputs[0],hprev,cprev,50)
+      seq = lstm.sample(outputs[seq_len-1],hprev,cprev,1000)
       txt = ''.join(ix for ix in seq)
       print txt
+      print 'END'
     count += 1
 
     if count == 1000:
